@@ -1,0 +1,189 @@
+import math
+import distutils.spawn
+volatility_path = distutils.spawn.find_executable('vol.py')
+
+import numpy
+from sklearn.ensemble import ExtraTreesClassifier, AdaBoostClassifier, RandomForestClassifier, GradientBoostingClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn import neighbors
+from sklearn.svm import SVC
+
+from features import countermeasure_debugger
+from features import countermeasure_sandbox
+from features import countermeasure_vm
+from features import api_hashing
+from features import trojan_banking
+from features import trojan_cookies
+from features import cryptography_cipher
+from features import cryptography_encoding
+from features import cryptography_hashing
+from features import memory_embedded_exe
+from features import binary_exports
+from features import binary_imports
+from features import code_hooks
+from features import binary_is_dynamic_library
+from features import memory_persistence
+from features import code_shellcode
+from features import trojan_credentials
+from features import memory_threads
+from features import memory_private
+from features import memory_tag
+from features import memory_protection
+from features import memory_mapped
+from features import binary_has_header
+from features import binary_is_module
+from features import api_general_api_strings
+from features import memory_network_strings
+from features import code_functions
+from features import binary_wiped_header
+from features import memory_is_heap
+from features import malfind
+from features import api_hbcia_api_strings
+from features import memory_is_sparse
+from features import memory_high_entropy_areas
+from features import binary_is_pe_or_dll
+from features import memory_victim_strings
+from features import api_dynamic_loading
+from features import memory_english_strings
+from features import code_indirect_calls
+from features import code_indirect_jumps
+from features import hollowfind
+
+# important configurations for QuincyDataExtraction.py
+
+characteristics = [
+    malfind,
+    hollowfind,
+
+    api_dynamic_loading,
+    api_general_api_strings,
+    api_hashing,
+    api_hbcia_api_strings,
+
+    binary_exports,
+    binary_has_header,
+    binary_imports,
+    binary_is_dynamic_library,
+    binary_is_module,
+    binary_is_pe_or_dll,
+    binary_wiped_header,
+
+    code_functions,
+    code_hooks,
+    code_indirect_calls,
+    code_indirect_jumps,
+    code_shellcode,
+
+    cryptography_cipher,
+    cryptography_encoding,
+    cryptography_hashing,
+
+    countermeasure_debugger,
+    countermeasure_sandbox,
+    countermeasure_vm,
+
+    memory_embedded_exe,
+    memory_english_strings,
+    memory_high_entropy_areas,
+    memory_is_heap,
+    memory_is_sparse,
+    memory_mapped,
+    memory_network_strings,
+    memory_persistence,
+    memory_private,
+    memory_protection,
+    memory_tag,
+    memory_threads,
+    memory_victim_strings,
+
+    trojan_banking,
+    trojan_cookies,
+    trojan_credentials,
+]
+
+profiles = {'winxp': 'WinXPSP2x86', 'win7': 'Win7SP0x86', 'win8': 'Win8SP1x86', 'win10': 'Win10x86'}
+folds = 10
+
+dbconfig = {
+    'sampleFsCollectionName': 'samples_fs',
+    'sampleCollectionName': 'samples',
+    'resultCollectionName': 'results',
+    'dumpCollectionName': 'dumps'
+}
+
+hostname = 'localhost'
+port = 27017
+
+vm = {
+    # EDIT ME!
+    'user': '',
+    'password': '',
+    'time': 120,
+    'mountSample': True,
+    'showBox': False,
+    'machines': {
+        # EDIT ME!
+        'winxp': '',
+        'win7': '',
+        'win8': '',
+        'win10': ''
+    }
+}
+
+# important configurations for QuincLearn.py
+CV = 3
+ITERS = 64
+
+RATIO = 0.05
+
+CLASSIFIERS = [
+        ("DecisionTree",
+         DecisionTreeClassifier(max_features=None, criterion="gini"), {
+            "class_weight": ["balanced", None], "max_features": ["auto", "sqrt"], "max_depth": [3,4,5,6,7,8,9,10,11,12,None]}),
+
+        ("RandomForest",
+         RandomForestClassifier(criterion="gini"),
+         {"class_weight": ["balanced", None], 'n_estimators': range(10, 500, 5), "max_features": ["auto", "sqrt"]}),
+
+        ("ExtraTrees",
+         ExtraTreesClassifier(criterion="gini"),
+         {"class_weight": ["balanced", None], 'n_estimators': range(10, 500, 5), "max_features": ["auto", "sqrt"]}),
+
+        ("AdaBoost",
+         AdaBoostClassifier(),
+         {'n_estimators': range(10, 500, 5), 'learning_rate': numpy.arange(0.01, 1.0, 0.05)}),
+
+        ("GradientBoosting",
+         GradientBoostingClassifier(),
+         {'learning_rate': numpy.arange(0.1, 1.0, 0.05), 'n_estimators': range(10, 500, 5), "max_depth": [4, 5, 6, 7, 8]} ),
+
+        ("SVM",
+         SVC(),
+         {"C": numpy.logspace(-2, 10, 13), "gamma": numpy.logspace(-9, 3, 13)}),
+
+        ("KNN",
+         neighbors.KNeighborsClassifier(),
+         {"n_neighbors": [math.pow(2, y) for y in range(1,6)], "weights": ["uniform", "distance"]}),
+
+        ("MLP",
+         MLPClassifier(),
+        {"alpha": 10.0 ** -numpy.arange(1, 7),
+         "activation": {"logistic", "tanh", "relu"},
+         "hidden_layer_sizes":[(x,) for x in range(4, 38, 2)]})
+        ]
+
+# important configurations for QuincyScan.py
+PRECOMPUTED_MODELS = {
+    "winxp": "winxp_sp3.json"
+}
+
+MALICIOUS = 0
+BENIGN = 1
+
+# EDIT ME!
+VIRUSTOTAL_KEY = ""
+VIRUSTOTAL_WAIT_SCAN = 180
+VIRUSTOTAL_WAIT_REQUEST = 15
+
+HEXDUMP_BYTES = 256
