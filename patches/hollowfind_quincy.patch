@@ -1,0 +1,250 @@
+From 02b3eec34b163a2308d9b13cfc336241657d77ac Mon Sep 17 00:00:00 2001
+From: thomas <thomas.barabosch@gmail.com>
+Date: Thu, 4 May 2017 15:08:18 +0200
+Subject: [PATCH] Patched HollowFind to work with Quincy
+
+---
+ hollowfind.py | 204 ++++++++++++++++++++++++++++++----------------------------
+ 1 file changed, 106 insertions(+), 98 deletions(-)
+
+diff --git a/hollowfind.py b/hollowfind.py
+index 2a03ac8..90b2ed9 100644
+--- a/hollowfind.py
++++ b/hollowfind.py
+@@ -204,75 +204,78 @@ class HollowFind(vadinfo.VADDump):
+     
+     def render_text(self, outfd, data):
+         for (hol_proc_peb_info, hol_proc_vad_info, hol_pid, hol_type, similar_procs, parent_proc_info) in data:
+-            (proc, pid, proc_name, ppid, create_time, proc_cmd_line, proc_image_baseaddr, mod_baseaddr, 
++
++            (proc, pid, proc_name, ppid, create_time, proc_cmd_line, proc_image_baseaddr, mod_baseaddr,
+              mod_size, mod_basename, mod_fullname) = hol_proc_peb_info
+             (vad_filename, vad_baseaddr, vad_size, vad_protection, vad_tag) = hol_proc_vad_info
+             (parent_name, parent_id) = parent_proc_info
+-            
+-            outfd.write("Hollowed Process Information:\n")
+-            outfd.write("\tProcess: {0} PID: {1}\n".format(proc_name, hol_pid))
+-            outfd.write("\tParent Process: {0} PPID: {1}\n".format(parent_name, ppid))
+-            outfd.write("\tCreation Time: {0}\n".format(create_time))
+-            outfd.write("\tProcess Base Name(PEB): {0}\n".format(mod_basename))
+-            outfd.write("\tCommand Line(PEB): {0}\n".format(proc_cmd_line))
+-            outfd.write("\tHollow Type: {0}\n".format(hollow_types[hol_type]))
+-            outfd.write("\n")
+-            outfd.write( "VAD and PEB Comparison:\n")
+-            outfd.write( "\tBase Address(VAD): {0:#x}\n".format(vad_baseaddr))
+-            outfd.write( "\tProcess Path(VAD): {0}\n".format(vad_filename))
+-            outfd.write( "\tVad Protection: {0}\n".format(vad_protection))
+-            outfd.write( "\tVad Tag: {0}\n".format(vad_tag))
+-            outfd.write("\n")
+-            
++            #
++            # outfd.write("Hollowed Process Information:\n")
++            # outfd.write("\tProcess: {0} PID: {1}\n".format(proc_name, hol_pid))
++            # outfd.write("\tParent Process: {0} PPID: {1}\n".format(parent_name, ppid))
++            # outfd.write("\tCreation Time: {0}\n".format(create_time))
++            # outfd.write("\tProcess Base Name(PEB): {0}\n".format(mod_basename))
++            # outfd.write("\tCommand Line(PEB): {0}\n".format(proc_cmd_line))
++            # outfd.write("\tHollow Type: {0}\n".format(hollow_types[hol_type]))
++            # outfd.write("\n")
++            # outfd.write( "VAD and PEB Comparison:\n")
++            # outfd.write( "\tBase Address(VAD): {0:#x}\n".format(vad_baseaddr))
++            # outfd.write( "\tProcess Path(VAD): {0}\n".format(vad_filename))
++            # outfd.write( "\tVad Protection: {0}\n".format(vad_protection))
++            # outfd.write( "\tVad Tag: {0}\n".format(vad_tag))
++            # outfd.write("\n")
++            #
+             if hol_type == 0:
+-                addr_space = proc.get_process_address_space()
+-                dos_header = obj.Object("_IMAGE_DOS_HEADER", offset=proc_image_baseaddr, vm=addr_space)
+-                nt_header = dos_header.get_nt_header()
+-                optional_header = obj.Object("_IMAGE_OPTIONAL_HEADER", offset=nt_header.obj_offset+0x18, vm=addr_space)
+-                ep_addr = proc_image_baseaddr + optional_header.AddressOfEntryPoint
+-                content = addr_space.read(ep_addr, 64)
+-                outfd.write("\tBase Address(PEB): {0:#x}\n".format(proc_image_baseaddr))
+-                outfd.write("\tProcess Path(PEB): {0}\n" .format(mod_fullname))
+-                outfd.write("\tMemory Protection: {0}\n".format(vad_protection))
+-                outfd.write("\tMemory Tag: {0}\n".format(vad_tag))
+-                outfd.write("\n")
+-                outfd.write("Disassembly(Entry Point):\n")
+-                if content != None:
+-                    outfd.write("\n".join(["\t{0:#010x} {1:<16} {2}".format(o, h, i) 
+-                     for o, i, h in malfind.Disassemble(content, ep_addr)
+-                    ]))
+-                else:
+-                    outfd.write("\tNo Disassembly: Memory Unreadable at {0:#010x}\n".format(ep_addr))
+-                    
+-                outfd.write("\n\n")
+-            
++                outfd.write("!0,{0},{1},{2}\n".format(proc_name, hol_pid, hex(proc_image_baseaddr).replace("L", "")))
++            #     addr_space = proc.get_process_address_space()
++            #     dos_header = obj.Object("_IMAGE_DOS_HEADER", offset=proc_image_baseaddr, vm=addr_space)
++            #     nt_header = dos_header.get_nt_header()
++            #     optional_header = obj.Object("_IMAGE_OPTIONAL_HEADER", offset=nt_header.obj_offset+0x18, vm=addr_space)
++            #     ep_addr = proc_image_baseaddr + optional_header.AddressOfEntryPoint
++            #     content = addr_space.read(ep_addr, 64)
++            #     outfd.write("\tBase Address(PEB): {0:#x}\n".format(proc_image_baseaddr))
++            #     outfd.write("\tProcess Path(PEB): {0}\n" .format(mod_fullname))
++            #     outfd.write("\tMemory Protection: {0}\n".format(vad_protection))
++            #     outfd.write("\tMemory Tag: {0}\n".format(vad_tag))
++            #     outfd.write("\n")
++            #     outfd.write("Disassembly(Entry Point):\n")
++            #     if content != None:
++            #         outfd.write("\n".join(["\t{0:#010x} {1:<16} {2}".format(o, h, i)
++            #          for o, i, h in malfind.Disassemble(content, ep_addr)
++            #         ]))
++            #     else:
++            #         outfd.write("\tNo Disassembly: Memory Unreadable at {0:#010x}\n".format(ep_addr))
++            #
++            #     outfd.write("\n\n")
++            #
+             if (hol_type == 1) or (hol_type == 2):
+                 for vad, addr_space in proc.get_vads():
+                     if vad.Start == proc_image_baseaddr:
+-                        content = addr_space.read(vad.Start, 64)
+-                        outfd.write("\tBase Address(PEB): {0:#x}\n".format(proc_image_baseaddr))
+-                        outfd.write("\tProcess Path(PEB): {0}\n" .format(mod_fullname))
+-                        outfd.write("\tMemory Protection: {0}\n".format(str(vadinfo.PROTECT_FLAGS.get(vad.VadFlags.Protection.v()) or  "")))
+-                        outfd.write("\tMemory Tag: {0}\n".format(str(vad.Tag or "")))
+-                        outfd.write("\n")
+-                        if content != None:
+-                            outfd.write("".join(["{0:#010x}  {1:<48}  {2}\n".format(vad.Start + o, h, ''.join(c))
+-                                       for o, h, c in utils.Hexdump(content)]))
+-                        else:
+-                            outfd.write("\tNo Hexdump: Memory Unreadable at {0:#010x}\n".format(vad.Start))
+-                        outfd.write("\n")
+-                        
+-            outfd.write("Similar Processes:\n")
+-            for similar_proc in similar_procs:
+-                (process_name, process_id, parent_name, parent_id, creation_time) = similar_proc
+-                outfd.write("\t{0}({1}) Parent:{2}({3}) Start:{4}\n".format(process_name,
+-                                                                            process_id,
+-                                                                            parent_name,
+-                                                                            parent_id,
+-                                                                            creation_time))
+-            outfd.write("\n")
+-            
+-            outfd.write("Suspicious Memory Regions:\n")
++                        outfd.write("!1/2,{0},{1},{2}\n".format(proc_name, hol_pid, hex(proc_image_baseaddr).replace("L", "")))
++            #             content = addr_space.read(vad.Start, 64)
++            #             outfd.write("\tBase Address(PEB): {0:#x}\n".format(proc_image_baseaddr))
++            #             outfd.write("\tProcess Path(PEB): {0}\n" .format(mod_fullname))
++            #             outfd.write("\tMemory Protection: {0}\n".format(str(vadinfo.PROTECT_FLAGS.get(vad.VadFlags.Protection.v()) or  "")))
++            #             outfd.write("\tMemory Tag: {0}\n".format(str(vad.Tag or "")))
++            #             outfd.write("\n")
++            #             if content != None:
++            #                 outfd.write("".join(["{0:#010x}  {1:<48}  {2}\n".format(vad.Start + o, h, ''.join(c))
++            #                            for o, h, c in utils.Hexdump(content)]))
++            #             else:
++            #                 outfd.write("\tNo Hexdump: Memory Unreadable at {0:#010x}\n".format(vad.Start))
++            #             outfd.write("\n")
++            #
++            # outfd.write("Similar Processes:\n")
++            # for similar_proc in similar_procs:
++            #     (process_name, process_id, parent_name, parent_id, creation_time) = similar_proc
++            #     outfd.write("\t{0}({1}) Parent:{2}({3}) Start:{4}\n".format(process_name,
++            #                                                                 process_id,
++            #                                                                 parent_name,
++            #                                                                 parent_id,
++            #                                                                 creation_time))
++            # outfd.write("\n")
++            #
++            # outfd.write("Suspicious Memory Regions:\n")
+             for vad, addr_space in proc.get_vads():
+                 content = addr_space.read(vad.Start, 64)
+                 if content == None:
+@@ -282,51 +285,56 @@ class HollowFind(vadinfo.VADDump):
+                     flag = "No PE/Possibly Code"
+                     if (vad_prot == "PAGE_EXECUTE_READWRITE"):
+                         sus_addr = vad.Start
+-                        outfd.write("\t{0:#x}({1})  Protection: {2}  Tag: {3}\n".format(vad.Start,
+-                                                                                        flag,
+-                                                                                        vad_prot,
+-                                                                                        str(vad.Tag or "")))
+-                        if self._config.DUMP_DIR:
+-                            filename = os.path.join(self._config.DUMP_DIR,"process.{0}.{1:#x}.dmp".format(hol_pid, sus_addr))
+-                            self.dump_vad(filename, vad, addr_space)
+-                    
++                        # outfd.write("\t{0:#x}({1})  Protection: {2}  Tag: {3}\n".format(vad.Start,
++                        #                                                                 flag,
++                        #                                                                 vad_prot,
++                        #                                                                 str(vad.Tag or "")))
++                        outfd.write("!SUS,{0},{1},{2}\n".format(proc_name, hol_pid, hex(vad.Start).replace("L", "")))
++                        # if self._config.DUMP_DIR:
++                        #     filename = os.path.join(self._config.DUMP_DIR,"process.{0}.{1:#x}.dmp".format(hol_pid, sus_addr))
++                        #     self.dump_vad(filename, vad, addr_space)
++
+                     elif (vad_prot == "PAGE_EXECUTE_WRITECOPY"):
+                         sus_addr = vad.Start
+-                        outfd.write("\t{0:#x}({1})  Protection: {2}  Tag: {3}\n".format(sus_addr,
+-                                                                                        flag,
+-                                                                                        vad_prot,
+-                                                                                        str(vad.Tag or "")))
+-                        if self._config.DUMP_DIR:
+-                            filename = os.path.join(self._config.DUMP_DIR,"process.{0}.{1:#x}.dmp".format(hol_pid, 
+-                                                                                                          sus_addr))
+-                            self.dump_vad(filename, vad, addr_space)
+-                        
++                        # outfd.write("\t{0:#x}({1})  Protection: {2}  Tag: {3}\n".format(sus_addr,
++                        #                                                                 flag,
++                        #                                                                 vad_prot,
++                        #
++                        #                                                        str(vad.Tag or "")))
++                        outfd.write("!SUS,{0},{1},{2}\n".format(proc_name, hol_pid, hex(vad.Start).replace("L", "")))
++                        # if self._config.DUMP_DIR:
++                        #     filename = os.path.join(self._config.DUMP_DIR,"process.{0}.{1:#x}.dmp".format(hol_pid,
++                        #                                                                                   sus_addr))
++                        #     self.dump_vad(filename, vad, addr_space)
++
+                 else:
+                     if vad_prot == "PAGE_EXECUTE_READWRITE":
+                         flag = "PE Found"
+                         sus_addr = vad.Start
+-                        outfd.write("\t{0:#x}({1})  Protection: {2}  Tag: {3}\n".format(sus_addr,
+-                                                                                        flag,
+-                                                                                        vad_prot,
+-                                                                                        str(vad.Tag or "")))
+-                        if self._config.DUMP_DIR:
+-                            filename = os.path.join(self._config.DUMP_DIR,"process.{0}.{1:#x}.dmp".format(hol_pid, 
+-                                                                                                          sus_addr))
+-                            self.dump_vad(filename, vad, addr_space)
+-                    
++                        # outfd.write("\t{0:#x}({1})  Protection: {2}  Tag: {3}\n".format(sus_addr,
++                        #                                                                 flag,
++                        #                                                                 vad_prot,
++                        #                                                                 str(vad.Tag or "")))
++                        outfd.write("!SUS,{0},{1},{2}\n".format(proc_name, hol_pid, hex(vad.Start).replace("L", "")))
++                        # if self._config.DUMP_DIR:
++                        #     filename = os.path.join(self._config.DUMP_DIR,"process.{0}.{1:#x}.dmp".format(hol_pid,
++                        #                                                                                   sus_addr))
++                        #     self.dump_vad(filename, vad, addr_space)
++
+                     elif (vad_prot == "PAGE_EXECUTE_WRITECOPY") and (not bool(vad.FileObject)):
+                         flag = "PE - No Mapped File"
+                         sus_addr = vad.Start
+-                        outfd.write("\t{0:#x}({1})  Protection: {2}  Tag: {3}\n".format(sus_addr,
+-                                                                                        flag,
+-                                                                                        vad_prot,
+-                                                                                        str(vad.Tag or "")))
+-                        if self._config.DUMP_DIR:
+-                            filename = os.path.join(self._config.DUMP_DIR,"process.{0}.{1:#x}.dmp".format(hol_pid, 
+-                                                                                                          sus_addr))
+-                            self.dump_vad(filename, vad, addr_space)
+-                        
+-            outfd.write("---------------------------------------------------\n\n")
++                        # outfd.write("\t{0:#x}({1})  Protection: {2}  Tag: {3}\n".format(sus_addr,
++                        #                                                                 flag,
++                        #                                                                 vad_prot,
++                        #                                                                 str(vad.Tag or "")))
++                        outfd.write("!SUS,{0},{1},{2}\n".format(proc_name, hol_pid, hex(vad.Start).replace("L", "")))
++            #             if self._config.DUMP_DIR:
++            #                 filename = os.path.join(self._config.DUMP_DIR,"process.{0}.{1:#x}.dmp".format(hol_pid,
++            #                                                                                               sus_addr))
++            #                 self.dump_vad(filename, vad, addr_space)
++            # #
++            # outfd.write("---------------------------------------------------\n\n")
+ 
+ 
+ 
+-- 
+2.7.4
+

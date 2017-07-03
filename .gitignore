@@ -1,0 +1,17 @@
+*.pyc
+*.vmem
+debug/tests/dumps/*/*.gz
+log
+scan.log
+scratch
+publication
+.idea/
+build/
+dist/
+data/
+featurememdumpdetection.egg-info/
+QuincyConfig.py
+
+zeus_winxp.gz
+teerac_winxp.gz
+spyeye_winxp.gz
