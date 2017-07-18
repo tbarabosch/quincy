@@ -41,7 +41,7 @@ class QuincyLearn(object):
 
         rgs = RandomizedSearchCV(estimator=self._classifier[1], param_distributions=self._classifier[2],
                                  error_score=0, cv=QuincyConfig.CV, n_iter=QuincyConfig.ITERS, refit=True,
-                                 n_jobs=-1, scoring="roc_auc", iid=False)
+                                 n_jobs=-1, scoring=QuincyConfig.METRIC, iid=False)
         rgs.fit(X, y)
         logging.info("Best SCORE: %s" % str(rgs.best_score_))
         logging.info("Best Params: %s" % str(rgs.best_params_))
@@ -58,7 +58,7 @@ class QuincyLearn(object):
         logging.info("Automagically extracting features with recursive feature eliminiation based on RandomForest")
 
         model = RandomForestClassifier(n_jobs=-1)
-        rfe = RFECV(model, cv=QuincyConfig.CV, verbose=2)
+        rfe = RFECV(model, cv=QuincyConfig.CV, verbose=2, scoring=QuincyConfig.METRIC)
         fit = rfe.fit(X, y)
         logging.info("Number of selected features: %d" % fit.n_features_)
 
@@ -126,6 +126,7 @@ class QuincyLearn(object):
         model_description["classifier"] = {"classifier": self._classifier[0], "param_space": str(self._classifier[2])}
         model_description["model_params"] = self._optimized_model.best_params_
         model_description["scaling"] = self._scaling
+        model_description["metric"] = QuincyConfig.METRIC
         if self._feature_selection:
             model_description["feature_selection_results"] = self._featureSelectionResults
 

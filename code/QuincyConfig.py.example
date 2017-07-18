@@ -126,7 +126,6 @@ vm = {
         # EDIT ME!
         'winxp': '',
         'win7': '',
-        'win8': '',
         'win10': ''
     }
 }
@@ -173,9 +172,13 @@ CLASSIFIERS = [
          "hidden_layer_sizes":[(x,) for x in range(4, 38, 2)]})
         ]
 
+METRIC = "f1_score"
+
 # important configurations for QuincyScan.py
 PRECOMPUTED_MODELS = {
-    "winxp": "winxp_sp3.json"
+    "winxp": "winxp_20170502_extratrees.json",
+    "win7": "win7_20170502_extratrees.json",
+    "win10": "win10_20170502_extratrees.json"
 }
 
 MALICIOUS = 0
