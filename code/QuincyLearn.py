@@ -58,7 +58,7 @@ class QuincyLearn(object):
         logging.info("Automagically extracting features with recursive feature eliminiation based on RandomForest")
 
         model = RandomForestClassifier(n_jobs=-1)
-        rfe = RFECV(model, cv=QuincyConfig.CV, verbose=2, scoring=QuincyConfig.METRIC)
+        rfe = RFECV(model, cv=QuincyConfig.CV, scoring=QuincyConfig.METRIC)
         fit = rfe.fit(X, y)
         logging.info("Number of selected features: %d" % fit.n_features_)
 

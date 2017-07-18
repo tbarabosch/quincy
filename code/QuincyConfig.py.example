@@ -143,19 +143,19 @@ CLASSIFIERS = [
 
         ("RandomForest",
          RandomForestClassifier(criterion="gini"),
-         {"class_weight": ["balanced", None], 'n_estimators': range(10, 500, 5), "max_features": ["auto", "sqrt"]}),
+         {"class_weight": ["balanced", None], 'n_estimators': range(10, 100, 2), "max_features": ["auto", "sqrt"]}),
 
         ("ExtraTrees",
          ExtraTreesClassifier(criterion="gini"),
-         {"class_weight": ["balanced", None], 'n_estimators': range(10, 500, 5), "max_features": ["auto", "sqrt"]}),
+         {"class_weight": ["balanced", None], 'n_estimators': range(10, 100, 2), "max_features": ["auto", "sqrt"]}),
 
         ("AdaBoost",
          AdaBoostClassifier(),
-         {'n_estimators': range(10, 500, 5), 'learning_rate': numpy.arange(0.01, 1.0, 0.05)}),
+         {'n_estimators': range(10, 100, 2), 'learning_rate': numpy.arange(0.01, 1.0, 0.05)}),
 
         ("GradientBoosting",
          GradientBoostingClassifier(),
-         {'learning_rate': numpy.arange(0.1, 1.0, 0.05), 'n_estimators': range(10, 500, 5), "max_depth": [4, 5, 6, 7, 8]} ),
+         {'learning_rate': numpy.arange(0.1, 1.0, 0.05), 'n_estimators': range(10, 100, 2), "max_depth": [4, 5, 6, 7, 8]} ),
 
         ("SVM",
          SVC(),
@@ -172,7 +172,7 @@ CLASSIFIERS = [
          "hidden_layer_sizes":[(x,) for x in range(4, 38, 2)]})
         ]
 
-METRIC = "f1_score"
+METRIC = "f1"
 
 # important configurations for QuincyScan.py
 PRECOMPUTED_MODELS = {
