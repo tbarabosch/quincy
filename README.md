@@ -1,3 +1,5 @@
+**NOTE**: unfortunately, I lack the time to offer technical support for this project as of now. The project has aged and after over five years there are issues with dependencies. The general idea of the project should still be valid and could be reimplemented with modern libraries. As a consequence, I archive the project.
+
 # General
 
 Quincy is a memory forensic tool that detects Host-Based Code Injection Attacks (HBCIAs) in memory dumps. This is the prototpye implementation of Quincy referenced in the paper "Quincy: Detecting Host-Based Code Injection Attacks in Memory Dumps" published at [DIMVA 2017](https://itsec.cs.uni-bonn.de/dimva2017/).
